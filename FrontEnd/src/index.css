@@ -3,10 +3,9 @@
 @layer base {
   :root {
     --screen-red: #61090b;
-    --screen-dark: #000000;
+    --Logo-color: #B58152;
     --button-color: #a0714f;
     --text-color: #c4a484;
-    --text-color: #ffffff;
   }
 }
 
