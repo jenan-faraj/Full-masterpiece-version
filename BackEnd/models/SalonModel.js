@@ -17,48 +17,45 @@ const salonSchema = new mongoose.Schema(
     longDescription: { type: String, default: "" },
     shortDescription: { type: String, default: "" },
     rating: { type: Number, default: 0 },
-    services: { type: [String], default: [] }, // ✅ تعديل المصفوفة
+    services: {
+      type: [
+        { title: { type: String, default: "" } },
+        { images: [{ type: String, default: "" }], default: [] },
+        { Category: { type: String, default: "" } },
+        { Duration: { type: String, default: "" } },
+        { shortDescription: { type: String, default: "" } },
+        { longDescription: { type: String, default: "" } },
+        { price: { type: Number, default: 0 } },
+      ],
+      default: [],
+    },
     visitors: { type: Number, default: 0 },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
+    book: [{ type: mongoose.Schema.Types.ObjectId, ref: "book" }],
     openingHours: {
-      monday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      tuesday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      wednesday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      thursday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      friday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      saturday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
-      sunday: {
-        open: { type: String, default: "" },
-        close: { type: String, default: "" },
-      },
+      open: { type: String, default: "" },
+      close: { type: String, default: "" },
     },
+    openingYear: { type: String, default: "" },
     map: {
       lng: { type: Number, default: 0 },
       lat: { type: Number, default: 0 },
     },
-    servicesImages: { type: [String], default: [] }, // ✅ تعديل المصفوفة
-    offers: { type: [String], default: [] }, // ✅ تعديل المصفوفة
+    servicesImages: { type: [String], default: [] },
+    offers: {
+      type: [
+        { title: { type: String, default: "" } },
+        { images: [{ type: String, default: "" }], default: [] },
+        { description: { type: String, default: "" } },
+        { endDate: { type: Date, default: "" } },
+        { originalPrice: { type: Number, default: 0 } },
+        { discountPrice: { type: Number, default: 0 } },
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model("Salon", salonSchema);
-

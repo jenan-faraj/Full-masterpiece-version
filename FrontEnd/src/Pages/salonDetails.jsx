@@ -130,8 +130,8 @@ function SalonDetails() {
               <div className="flex items-center">
                 <Clock size={20} className="text-[var(--Logo-color)] mr-2" />
                 <span>
-                  Opens {salon.openingHours.monday.open || "9:00 AM"} - Closes{" "}
-                  {salon.openingHours.monday.close || "8:00 PM"}
+                  Opens {salon.openingHours.open || "9:00 AM"} - Closes{" "}
+                  {salon.openingHours.close || "8:00 PM"}
                 </span>
               </div>
             </div>
@@ -230,10 +230,10 @@ function SalonDetails() {
                       />
                     </div>
                     <h3 className="text-lg font-medium">
-                      {service.name || "service name"}
+                      {service.title || "service name"}
                     </h3>
                     <p className="text-gray-600 mt-1">
-                      {service.description || "service description"}
+                      {service.shortDescription || "service description"}
                     </p>
                     <div className="flex justify-between items-center mt-4">
                       <span className="font-bold text-[var(--Logo-color)]">
@@ -282,26 +282,32 @@ function SalonDetails() {
                         </div>
                       </div>
                       <div className="w-2/3">
-                        <div className="bg-red-100 text-red-800 rounded-full px-3 py-1 text-xs inline-block mb-2">
+                        <div className="bg-[#fff5eb] border border-[#B58152] text-[#B58152] font-bold rounded-full px-3 py-1 text-xs inline-block mb-2">
                           Special Offer
                         </div>
-                        <h3 className="text-lg font-medium">{offer.title}</h3>
+                        <h3 className="text-lg font-medium text-[#B58152]">
+                          {offer.title || "MMMeeeooowwww"}
+                        </h3>
                         <p className="text-gray-600 text-sm mt-1">
-                          {offer.description}
+                          {offer.description ||
+                            "Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow"}
                         </p>
                         <div className="mt-2 flex justify-between items-center">
                           <div>
                             <span className="line-through text-gray-500 text-sm">
-                              ${offer.originalPrice}
+                              ${offer.originalPrice || 100}
                             </span>
-                            <span className="text-red-600 font-bold ml-2">
-                              ${offer.discountPrice}
+                            <span className="text-[#B58152] font-bold ml-2">
+                              ${offer.discountPrice || 50}
                             </span>
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <Calendar size={14} className="mr-1" />
                             <span>Ends {offer.endDate || "soon"}</span>
                           </div>
+                          <button className="bg-[var(--Logo-color)] text-white px-4 py-1 rounded-md text-sm hover:bg-[var(--button-color)] transition">
+                            Book
+                          </button>
                         </div>
                       </div>
                     </div>
