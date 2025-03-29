@@ -5,7 +5,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const userRoute = require("./routes/UserRoute");
-const salonRoutes = require("./routes/SalonRoute")
+const salonRoutes = require("./routes/SalonRoute");
+const bookRoutes = require("./routes/bookRoutes");
 
 //---------------------------
 // Middleware
@@ -37,6 +38,15 @@ mongoose
 //---------------------------
 app.use("/api/users", userRoute);
 app.use("/api/salons", salonRoutes);
+app.use("/api/bookings", bookRoutes); // تحديد المسار الأساسي للـ routes
+app.get("/get_token", (req, res) => {
+  const token = req.cookies.token; 
+  if (!token) {
+    return res.status(400).json({ message: "No token found" });
+  }
+  res.send({ token });
+});
+
 
 //---------------------------
 // ERROR HANDLERS

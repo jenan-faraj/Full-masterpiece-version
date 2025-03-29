@@ -3,6 +3,7 @@ const Salon = require("../models/SalonModel");
 exports.createSalon = async (req, res) => {
   try {
     const newSalon = new Salon(req.body);
+    console.log(newSalon)
     await newSalon.save();
     res.status(201).json(newSalon);
   } catch (error) {
@@ -30,10 +31,22 @@ exports.getSalonById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 exports.updateSalon = async (req, res) => {
   try {
-    const updatedSalon = await Salon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedSalon = await Salon.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { 
+        new: true,  // إرجاع المستند المحدث
+        runValidators: true,  // التحقق من صحة البيانات حسب المخطط
+        context: 'query'  // تشغيل المتحققات قبل التحديث
+      }
+    );
+
+    if (!updatedSalon) {
+      return res.status(404).json({ message: "الصالون غير موجود" });
+    }
+
     res.json(updatedSalon);
   } catch (error) {
     res.status(400).json({ error: error.message });

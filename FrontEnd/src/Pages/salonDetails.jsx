@@ -11,6 +11,8 @@ import {
   Calendar,
 } from "lucide-react";
 import ServicePopup from "./ServicesPopup";
+import MapComponent from "../components/MapViue";
+import { Link } from "react-router-dom";
 
 function SalonDetails() {
   const { id } = useParams();
@@ -61,11 +63,15 @@ function SalonDetails() {
     <div className="bg-gray-50 min-h-screen pb-12">
       {/* Header Banner with Logo */}
       <div className="relative h-64">
-        <img
-          className="w-full h-full object-cover bg-pink-200"
-          src={salon.profileImage}
-          alt="background"
-        />
+        {salon.bgImage ? (
+          <img
+            className="w-full h-full object-cover bg-[var(--Logo-color)]"
+            src={salon.profileImage}
+            alt="background"
+          />
+        ) : (
+          <div className="w-full h-full object-cover bg-[var(--Logo-color)]"></div>
+        )}
         <div className="absolute -bottom-16 left-10 bg-white rounded-full p-1 border-4 border-white shadow-lg h-32 w-32">
           <img
             src={salon.profileImage}
@@ -92,18 +98,17 @@ function SalonDetails() {
               />
               <span className="font-medium">{salon.rating}</span>
               <span className="text-gray-500 ml-1">
-                ({salon.comments?.length || 0} reviews)
+                ({salon.visitors} visitors)
               </span>
             </div>
           </div>
         </div>
         <div className="space-x-4 mt-4 md:mt-0">
-          <button className="bg-[var(--Logo-color)] text-white px-6 py-2 rounded-md hover:bg-[var(--button-color)] transition">
-            Book Now
-          </button>
-          <button className="bg-white text-[var(--button-color)] px-6 py-2 rounded-md border border-[var(--button-color)] hover:bg-[#faf5f1] transition">
-            View Offers
-          </button>
+          <Link to={`/book/${salon._id}`}>
+            <button className="bg-[var(--Logo-color)] text-white px-6 py-2 rounded-md hover:bg-[var(--button-color)] transition">
+              Book Now
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -239,9 +244,6 @@ function SalonDetails() {
                       <span className="font-bold text-[var(--Logo-color)]">
                         ${service.price || 100}
                       </span>
-                      <button className="bg-[var(--Logo-color)] text-white px-4 py-1 rounded-md text-sm hover:bg-[var(--button-color)] transition">
-                        Book
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -303,11 +305,13 @@ function SalonDetails() {
                           </div>
                           <div className="flex items-center text-sm text-gray-500">
                             <Calendar size={14} className="mr-1" />
-                            <span>Ends {offer.endDate || "soon"}</span>
+                            <span>
+                              Ends{" "}
+                              {new Date(
+                                offer.endDate || "soon"
+                              ).toLocaleDateString()}
+                            </span>
                           </div>
-                          <button className="bg-[var(--Logo-color)] text-white px-4 py-1 rounded-md text-sm hover:bg-[var(--button-color)] transition">
-                            Book
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -384,11 +388,9 @@ function SalonDetails() {
         {activeTab === "location" && (
           <div className="bg-white shadow-md rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-6">Location</h2>
-            <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden border mb-6">
+            <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden mb-6">
               {/* Placeholder for map */}
-              <div className="w-full h-64 bg-gray-200 flex justify-center items-center">
-                <p className="text-gray-500">Map showing {salon.location}</p>
-              </div>
+              {<MapComponent location={salon.map} />}
             </div>
             <div className="flex flex-col md:flex-row justify-between">
               <div>
@@ -402,8 +404,8 @@ function SalonDetails() {
                     </div>
                     <div>
                       <p className="text-gray-700">
-                        {salon.openingHours.monday.open || "9:00"}AM -{" "}
-                        {salon.openingHours.monday.close || "8:00 PM"} PM
+                        {salon.openingHours.open || "9:00"}AM -{" "}
+                        {salon.openingHours.close || "8:00 PM"} PM
                       </p>
                     </div>
                   </div>
@@ -421,9 +423,6 @@ function SalonDetails() {
                     <span>{salon.email}</span>
                   </div>
                 </div>
-                <button className="mt-4 bg-[var(--Logo-color)] text-white px-4 py-2 rounded-md hover:bg-[var(--button-color)] transition">
-                  Get Directions
-                </button>
               </div>
             </div>
           </div>

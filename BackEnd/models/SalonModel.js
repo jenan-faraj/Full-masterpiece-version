@@ -14,24 +14,28 @@ const salonSchema = new mongoose.Schema(
     role: { type: String, default: "salon_owner" },
     isDeleted: { type: Boolean, default: false },
     profileImage: { type: String, default: "" },
+    bgImage: { type: String, default: "" },
     longDescription: { type: String, default: "" },
     shortDescription: { type: String, default: "" },
     rating: { type: Number, default: 0 },
-    services: {
-      type: [
-        { title: { type: String, default: "" } },
-        { images: [{ type: String, default: "" }], default: [] },
-        { Category: { type: String, default: "" } },
-        { Duration: { type: String, default: "" } },
-        { shortDescription: { type: String, default: "" } },
-        { longDescription: { type: String, default: "" } },
-        { price: { type: Number, default: 0 } },
-      ],
-      default: [],
+    status: {
+      type: String,
+      enum: ["Rejected", "Pending", "Published"],
+      default: "Pending",
     },
+    services: [
+      {
+        title: { type: String, default: "" },
+        images: { type: [String], default: [] },
+        category: { type: String, default: "" }, // خليها small letter عشان توحيد الأسماء
+        duration: { type: String, default: "" },
+        shortDescription: { type: String, default: "" },
+        longDescription: { type: String, default: "" },
+        price: { type: Number, default: 0 },
+      },
+    ],
     visitors: { type: Number, default: 0 },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
-    users: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
     book: [{ type: mongoose.Schema.Types.ObjectId, ref: "book" }],
     openingHours: {
       open: { type: String, default: "" },
@@ -43,17 +47,16 @@ const salonSchema = new mongoose.Schema(
       lat: { type: Number, default: 0 },
     },
     servicesImages: { type: [String], default: [] },
-    offers: {
-      type: [
-        { title: { type: String, default: "" } },
-        { images: [{ type: String, default: "" }], default: [] },
-        { description: { type: String, default: "" } },
-        { endDate: { type: Date, default: "" } },
-        { originalPrice: { type: Number, default: 0 } },
-        { discountPrice: { type: Number, default: 0 } },
-      ],
-      default: [],
-    },
+    offers: [
+      {
+        title: { type: String, default: "" },
+        images: { type: [String], default: [] },
+        description: { type: String, default: "" },
+        endDate: { type: Date, default: null },
+        originalPrice: { type: Number, default: 0 },
+        discountPrice: { type: Number, default: 0 },
+      },
+    ],
   },
   { timestamps: true }
 );

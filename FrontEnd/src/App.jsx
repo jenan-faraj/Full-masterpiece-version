@@ -9,6 +9,7 @@ import Navbar from "./components/Navbar";
 import Categories from "./Pages/categories";
 import SalonRegistrationForm from "./Pages/SalonRegistrationForm";
 import SalonDetails from "./Pages/salonDetails";
+import Book from "./Pages/SalonBook";
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/Register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/book/:id" element={<Book />} />
         <Route path="/salonDetails/:id" element={<SalonDetails />} />
         <Route
           path="/salonRegistrationForm"

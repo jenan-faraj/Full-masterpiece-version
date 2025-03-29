@@ -35,8 +35,8 @@ const ServicePopup = ({ isOpen, onClose, service }) => {
         onMouseLeave={() => setIsPressing(false)}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[var(--primary-color)] to-[#3b0405] p-5 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white">
+        <div className="bg-gradient-to-r from-[#ddc3a9] to-[#835a35] p-5 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-[#5d3716]">
             {service.title || "Service Details"}
           </h2>
           <button
@@ -89,7 +89,7 @@ const ServicePopup = ({ isOpen, onClose, service }) => {
                 { label: "Service Name", value: service.title },
                 { label: "Category", value: service.category },
                 { label: "Duration", value: service.duration },
-                { label: "Price", value: service.price },
+                { label: "Price", value: "$" + service.price },
               ].map((item, index) => (
                 <div
                   key={index}
@@ -125,21 +125,29 @@ const ServicePopup = ({ isOpen, onClose, service }) => {
                     )}
 
                     {/* Service Description */}
-                    {hasContent(service.description) && (
+                    {hasContent(service.shortDescription) && (
                       <div className="text-gray-700 ltr leading-relaxed">
-                        <p>{service.description}</p>
+                        <h2>{service.shortDescription}</h2>
+                        <h1>{service.longDescription}</h1>
                       </div>
                     )}
 
-                    {/* Features Section */}
-                    {hasContent(service.features) && (
+                    {/* Images Section */}
+                    {service.images && service.images.length > 0 && (
                       <div className="section-container bg-gray-50 p-4 rounded-md">
                         <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                          Service Features
+                          Service Images
                         </h4>
-                        <p className="text-gray-700 leading-relaxed">
-                          {service.features}
-                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                          {service.images.map((img, index) => (
+                            <img
+                              key={index}
+                              src={img}
+                              alt={`Service Image ${index + 1}`}
+                              className="w-full rounded-md shadow-md"
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
 
