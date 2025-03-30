@@ -13,6 +13,7 @@ import {
 import ServicePopup from "./ServicesPopup";
 import MapComponent from "../components/MapViue";
 import { Link } from "react-router-dom";
+import ReviewsTab from "../components/ReviewsTab";
 
 function SalonDetails() {
   const { id } = useParams();
@@ -327,63 +328,7 @@ function SalonDetails() {
           </div>
         )}
 
-        {activeTab === "reviews" && (
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-              <h2 className="text-xl font-semibold">Customer Reviews</h2>
-              <div className="flex items-center mt-2 md:mt-0">
-                <Star
-                  size={24}
-                  className="text-yellow-500 mr-1"
-                  fill="currentColor"
-                />
-                <span className="text-2xl font-bold">{salon.rating}</span>
-                <span className="text-gray-500 ml-2">
-                  ({salon.comments?.length || 0} reviews)
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {salon.comments &&
-                salon.comments.map((comment, index) => (
-                  <div key={index} className="border-b pb-6 last:border-0">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden">
-                          <img
-                            src={
-                              comment.userImage ||
-                              "https://via.placeholder.com/40"
-                            }
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-medium">
-                            {comment.userName || "Customer"}
-                          </h4>
-                        </div>
-                      </div>
-                      <span className="text-gray-500 text-sm">
-                        {comment.date || "Recently"}
-                      </span>
-                    </div>
-                    <p className="mt-3 text-gray-700">
-                      {comment.text || "Great salon experience!"}
-                    </p>
-                  </div>
-                ))}
-
-              {(!salon.comments || salon.comments.length === 0) && (
-                <p className="text-gray-500 text-center py-10">
-                  No reviews yet. Be the first to leave a review!
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+        {activeTab === "reviews" && <ReviewsTab />}
 
         {activeTab === "location" && (
           <div className="bg-white shadow-md rounded-lg p-6">
