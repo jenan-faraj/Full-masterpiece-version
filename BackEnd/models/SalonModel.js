@@ -35,7 +35,7 @@ const salonSchema = new mongoose.Schema(
       },
     ],
     visitors: { type: Number, default: 0 },
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    Review: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
     book: [{ type: mongoose.Schema.Types.ObjectId, ref: "book" }],
     openingHours: {
       open: { type: String, default: "" },
