@@ -9,11 +9,13 @@ import {
   Mail,
   Award,
   Calendar,
+  Camera,
+  Pencil,
 } from "lucide-react";
-import ServicePopup from "./ServicesPopup";
 import MapComponent from "../components/MapViue";
 import { Link } from "react-router-dom";
 import ReviewsTab from "../components/ReviewsTab";
+import AddServiceButton from "../components/ServicesTab";
 
 function SalonDetails() {
   const { id } = useParams();
@@ -21,8 +23,26 @@ function SalonDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("services");
-  const [selectedService, setSelectedService] = useState(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [editingField, setEditingField] = useState("");
+  const [updatedValue, setUpdatedValue] = useState("");
+  const [user, setUser] = useState("");
+  const [userId, setUserId] = useState(null);
+
+  const handleSave = async () => {
+    try {
+      await axios.put(`http://localhost:3000/api/salons/${salon._id}`, {
+        [editingField]: updatedValue,
+      });
+      // تحديث الواجهة بعد الحفظ:
+      setSalon((prev) => ({
+        ...prev,
+        [editingField]: updatedValue,
+      }));
+      setEditingField(null);
+    } catch (error) {
+      console.error("Error updating salon info:", error);
+    }
+  };
 
   useEffect(() => {
     axios
@@ -37,14 +57,56 @@ function SalonDetails() {
       });
   }, [id]);
 
-  const handleServiceClick = (service) => {
-    setSelectedService(service);
-    setIsPopupOpen(true);
-  };
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/get_token", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-  const closePopup = () => {
-    setIsPopupOpen(false);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token) {
+            const decodedToken = JSON.parse(atob(data.token.split(".")[1]));
+            if (decodedToken.userId) {
+              setUserId(decodedToken.userId);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+
+    fetchToken();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/users/profile",
+        {
+          withCredentials: true, // مهم عشان يبعث الكوكيز للتوكن
+        }
+      );
+      setUser(response.data);
+      console.log("User Profile:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error fetching profile:",
+        error.response?.data || error.message
+      );
+      return null;
+    }
   };
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
 
   if (loading)
     return (
@@ -62,16 +124,44 @@ function SalonDetails() {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
-      {/* Header Banner with Logo */}
+      {/* Header with Profile Image */}
       <div className="relative h-64">
         {salon.bgImage ? (
-          <img
-            className="w-full h-full object-cover bg-[var(--Logo-color)]"
-            src={salon.profileImage}
-            alt="background"
-          />
+          <div className="relative w-full h-full">
+            <img
+              className="w-full h-full object-cover bg-[var(--Logo-color)]"
+              src={salon.bgImage}
+              alt="background"
+            />
+            {user && user.email === salon.email && (
+              <div className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md cursor-pointer">
+                <Camera
+                  size={20}
+                  className="text-[var(--Logo-color)]"
+                  onClick={() => {
+                    setEditingField("bgImage");
+                    // Here you would typically open a file selector dialog
+                    // This is a placeholder for the actual implementation
+                  }}
+                />
+              </div>
+            )}
+          </div>
         ) : (
-          <div className="w-full h-full object-cover bg-[var(--Logo-color)]"></div>
+          <div className="w-full h-full object-cover bg-[var(--Logo-color)] relative">
+            {user && user.email === salon.email && (
+              <div className="absolute top-2 right-2 bg-white p-2 rounded-full shadow-md cursor-pointer">
+                <Camera
+                  size={20}
+                  className="text-[var(--Logo-color)]"
+                  onClick={() => {
+                    setEditingField("bgImage");
+                    // Here you would typically open a file selector dialog
+                  }}
+                />
+              </div>
+            )}
+          </div>
         )}
         <div className="absolute -bottom-16 left-10 bg-white rounded-full p-1 border-4 border-white shadow-lg h-32 w-32">
           <img
@@ -79,18 +169,77 @@ function SalonDetails() {
             alt={salon.name}
             className="w-full h-full object-cover rounded-full"
           />
+          {user && user.email === salon.email && (
+            <div className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md cursor-pointer">
+              <Camera
+                size={18}
+                className="text-[var(--Logo-color)]"
+                onClick={() => {
+                  setEditingField("profileImage");
+                  // Here you would typically open a file selector dialog
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Title and Buttons Section */}
       <div className="mt-24 flex flex-col md:flex-row justify-between items-start md:items-center px-6 md:px-10 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--button-color)]">
-            {salon.name}
-          </h1>
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-[var(--button-color)]">
+              {user && user.email === salon.email && editingField === "name" ? (
+                <input
+                  value={updatedValue}
+                  onChange={(e) => setUpdatedValue(e.target.value)}
+                  onBlur={handleSave}
+                  className="text-xl border-b border-gray-300 outline-none"
+                />
+              ) : (
+                <>
+                  {salon.name}
+                  {user && user.email === salon.email && (
+                    <Pencil
+                      className="inline ml-2 cursor-pointer text-gray-400"
+                      size={16}
+                      onClick={() => {
+                        setEditingField("name");
+                        setUpdatedValue(salon.name);
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </h1>
+          </div>
           <div className="flex items-center mt-2">
             <MapPin size={18} className="text-gray-500 mr-1" />
-            <span className="text-gray-600">{salon.location}</span>
+            {user &&
+            user.email === salon.email &&
+            editingField === "location" ? (
+              <input
+                value={updatedValue}
+                onChange={(e) => setUpdatedValue(e.target.value)}
+                onBlur={handleSave}
+                className="text-gray-600 border-b border-gray-300 outline-none"
+              />
+            ) : (
+              <>
+                <span className="text-gray-600">{salon.location}</span>
+                {user && user.email === salon.email && (
+                  <Pencil
+                    className="ml-1 text-gray-400 cursor-pointer"
+                    size={14}
+                    onClick={() => {
+                      setEditingField("location");
+                      setUpdatedValue(salon.location);
+                    }}
+                  />
+                )}
+              </>
+            )}
+
             <div className="flex items-center ml-4">
               <Star
                 size={18}
@@ -118,27 +267,177 @@ function SalonDetails() {
         <div className="flex flex-col md:flex-row justify-between">
           <div className="md:w-2/3 mb-6 md:mb-0">
             <h2 className="text-xl font-semibold mb-4">About {salon.name}</h2>
-            <p className="text-gray-700">{salon.longDescription}</p>
+            {user &&
+            user.email === salon.email &&
+            editingField === "longDescription" ? (
+              <textarea
+                value={updatedValue}
+                onChange={(e) => setUpdatedValue(e.target.value)}
+                onBlur={handleSave}
+                className="w-full border border-gray-300 rounded-md p-2"
+              />
+            ) : (
+              <p className="text-gray-700">
+                {salon.longDescription}
+                {user && user.email === salon.email && (
+                  <Pencil
+                    className="ml-2 text-gray-400 cursor-pointer inline"
+                    size={14}
+                    onClick={() => {
+                      setEditingField("longDescription");
+                      setUpdatedValue(salon.longDescription);
+                    }}
+                  />
+                )}
+              </p>
+            )}
 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Phone */}
               <div className="flex items-center">
                 <Phone size={20} className="text-[var(--Logo-color)] mr-2" />
-                <span>{salon.phone}</span>
+                {user &&
+                user.email === salon.email &&
+                editingField === "phone" ? (
+                  <input
+                    value={updatedValue}
+                    onChange={(e) => setUpdatedValue(e.target.value)}
+                    onBlur={handleSave}
+                    className="border-b border-gray-300 outline-none"
+                  />
+                ) : (
+                  <>
+                    <span>{salon.phone}</span>
+                    {user && user.email === salon.email && (
+                      <Pencil
+                        className="ml-2 text-gray-400 cursor-pointer"
+                        size={14}
+                        onClick={() => {
+                          setEditingField("phone");
+                          setUpdatedValue(salon.phone);
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* Email */}
               <div className="flex items-center">
                 <Mail size={20} className="text-[var(--Logo-color)] mr-2" />
-                <span>{salon.email}</span>
+                {user &&
+                user.email === salon.email &&
+                editingField === "email" ? (
+                  <input
+                    value={updatedValue}
+                    onChange={(e) => setUpdatedValue(e.target.value)}
+                    onBlur={handleSave}
+                    className="border-b border-gray-300 outline-none"
+                  />
+                ) : (
+                  <>
+                    <span>{salon.email}</span>
+                    {user && user.email === salon.email && (
+                      <Pencil
+                        className="ml-2 text-gray-400 cursor-pointer"
+                        size={14}
+                        onClick={() => {
+                          setEditingField("email");
+                          setUpdatedValue(salon.email);
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* سنة الافتتاح */}
               <div className="flex items-center">
                 <Award size={20} className="text-[var(--Logo-color)] mr-2" />
-                <span className="capitalize">{salon.subscription} Member</span>
+                {user &&
+                user.email === salon.email &&
+                editingField === "openingYear" ? (
+                  <input
+                    value={updatedValue}
+                    onChange={(e) => setUpdatedValue(e.target.value)}
+                    onBlur={handleSave}
+                    className="border-b border-gray-300 outline-none"
+                  />
+                ) : (
+                  <>
+                    <span className="capitalize">
+                      تم الافتتاح عام {salon.openingYear}
+                    </span>
+                    {user && user.email === salon.email && (
+                      <Pencil
+                        className="ml-2 text-gray-400 cursor-pointer"
+                        size={14}
+                        onClick={() => {
+                          setEditingField("openingYear");
+                          setUpdatedValue(salon.openingYear);
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
+
+              {/* ساعات العمل */}
               <div className="flex items-center">
                 <Clock size={20} className="text-[var(--Logo-color)] mr-2" />
-                <span>
-                  Opens {salon.openingHours.open || "9:00 AM"} - Closes{" "}
-                  {salon.openingHours.close || "8:00 PM"}
-                </span>
+                {user &&
+                user.email === salon.email &&
+                editingField === "openingHours" ? (
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={updatedValue.open}
+                      onChange={(e) =>
+                        setUpdatedValue((prev) => ({
+                          ...prev,
+                          open: e.target.value,
+                        }))
+                      }
+                      onBlur={handleSave}
+                      className="border-b border-gray-300 outline-none w-24"
+                      placeholder="Open"
+                    />
+                    <span>-</span>
+                    <input
+                      type="text"
+                      value={updatedValue.close}
+                      onChange={(e) =>
+                        setUpdatedValue((prev) => ({
+                          ...prev,
+                          close: e.target.value,
+                        }))
+                      }
+                      onBlur={handleSave}
+                      className="border-b border-gray-300 outline-none w-24"
+                      placeholder="Close"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <span>
+                      Opens {salon.openingHours.open || "9:00 AM"} - Closes{" "}
+                      {salon.openingHours.close || "8:00 PM"}
+                    </span>
+                    {user && user.email === salon.email && (
+                      <Pencil
+                        className="ml-2 text-gray-400 cursor-pointer"
+                        size={14}
+                        onClick={() => {
+                          setEditingField("openingHours");
+                          setUpdatedValue({
+                            open: salon.openingHours.open || "9:00 AM",
+                            close: salon.openingHours.close || "8:00 PM",
+                          });
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -160,14 +459,89 @@ function SalonDetails() {
                 <span className="text-gray-600">Special Offers</span>
                 <span className="font-medium">{salon.offers.length || 0}</span>
               </div>
-              <div className="flex justify-between">
+              {/* اسم المالك */}
+              <div className="flex justify-between items-center">
                 <span className="text-gray-600">Owner</span>
-                <span className="font-medium">{salon.ownerName}</span>
+                <div className="flex items-center">
+                  {user &&
+                  user.email === salon.email &&
+                  editingField === "ownerName" ? (
+                    <input
+                      value={updatedValue}
+                      onChange={(e) => setUpdatedValue(e.target.value)}
+                      onBlur={handleSave}
+                      className="border-b border-gray-300 outline-none"
+                    />
+                  ) : (
+                    <>
+                      <span className="capitalize">{salon.ownerName}</span>
+                      {user && user.email === salon.email && (
+                        <Pencil
+                          className="ml-2 text-gray-400 cursor-pointer"
+                          size={14}
+                          onClick={() => {
+                            setEditingField("ownerName");
+                            setUpdatedValue(salon.ownerName);
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Modal for image uploads - you would need to implement this further */}
+      {(editingField === "profileImage" || editingField === "bgImage") &&
+        user &&
+        user.email === salon.email && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full">
+              <h3 className="text-lg font-medium mb-4">Upload Image</h3>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-md file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-[var(--Logo-color)] file:text-white
+                      hover:file:bg-[var(--button-color)]
+                      cursor-pointer
+                    "
+                onChange={(e) => {
+                  // Handle file upload
+                  // This is a placeholder for the actual implementation
+                  const file = e.target.files[0];
+                  if (file) {
+                    // Here you would upload the file to your server
+                    // and update salon object
+                    console.log(`Uploading ${editingField} file:`, file);
+
+                    // Example of what you might do (pseudocode):
+                    uploadImage(file).then((url) => {
+                      updateSalon({ ...salon, [editingField]: url });
+                    });
+
+                    // Close modal after upload
+                    setEditingField("");
+                  }
+                }}
+              />
+              <div className="flex justify-end mt-4 space-x-2">
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition"
+                  onClick={() => setEditingField("")}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Tab navigation */}
       <div className="mx-6 md:mx-10 mb-4">
@@ -218,50 +592,7 @@ function SalonDetails() {
       {/* Tab content */}
       <div className="mx-6 md:mx-10">
         {activeTab === "services" && (
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-6">Our Services</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {salon.services &&
-                salon.services.map((service, index) => (
-                  <div
-                    key={index}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="h-40 overflow-hidden rounded-md mb-4">
-                      <img
-                        onClick={() => handleServiceClick(service)}
-                        src={salon.profileImage}
-                        alt={service.name}
-                        className="w-full hover:cursor-pointer h-full object-cover"
-                      />
-                    </div>
-                    <h3 className="text-lg font-medium">
-                      {service.title || "service name"}
-                    </h3>
-                    <p className="text-gray-600 mt-1">
-                      {service.shortDescription || "service description"}
-                    </p>
-                    <div className="flex justify-between items-center mt-4">
-                      <span className="font-bold text-[var(--Logo-color)]">
-                        ${service.price || 100}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-              {(!salon.services || salon.services.length === 0) && (
-                <p className="text-gray-500 col-span-3 text-center py-10">
-                  No services available
-                </p>
-              )}
-              {/* Service Popup Component */}
-              <ServicePopup
-                isOpen={isPopupOpen}
-                onClose={closePopup}
-                service={selectedService}
-              />
-            </div>
-          </div>
+          <AddServiceButton user={user} salon={salon} />
         )}
 
         {activeTab === "offers" && (

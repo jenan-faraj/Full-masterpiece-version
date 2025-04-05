@@ -138,14 +138,24 @@ const ServicePopup = ({ isOpen, onClose, service }) => {
                         <h4 className="text-lg font-semibold text-gray-900 mb-3">
                           Service Images
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="columns-2 gap-4">
                           {service.images.map((img, index) => (
-                            <img
+                            <div
                               key={index}
-                              src={img}
-                              alt={`Service Image ${index + 1}`}
-                              className="w-full rounded-md shadow-md"
-                            />
+                              className="mb-4 break-inside-avoid"
+                            >
+                              <img
+                                src={img}
+                                alt={`Service Image ${index + 1}`}
+                                className="w-full rounded-md shadow-md"
+                              />
+                              {/* Optional: Add caption below image */}
+                              {img.caption && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {img.caption}
+                                </p>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </div>

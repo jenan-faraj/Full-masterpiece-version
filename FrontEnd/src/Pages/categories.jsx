@@ -67,7 +67,6 @@ function Categories() {
     },
   ];
 
-
   // Fetch data from Firebase using Axios
   useEffect(() => {
     axios
@@ -117,6 +116,35 @@ function Categories() {
     setSearchTerm(e.target.value);
   };
 
+  async function visitorsCount(salon) {
+    if (!salon || !salon._id) {
+      console.error("Invalid salon data");
+      return;
+    }
+
+    const updatedData = { visitors: (salon.visitors || 0) + 1 };
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/salons/${salon._id}`,
+        updatedData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Salon updated successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error updating salon:",
+        error.response?.data || error.message
+      );
+    }
+  }
+
   // Handler for rating filter
   const handleRatingFilter = (e) => {
     setRatingFilter(e.target.value);
@@ -124,7 +152,7 @@ function Categories() {
 
   return (
     <>
-            <div className="relative w-full">
+      <div className="relative w-full">
         <div className="relative h-[500px] overflow-hidden">
           {carouselItems.map((item, index) => (
             <div
@@ -253,6 +281,7 @@ function Categories() {
                 </div>
 
                 <Link
+                  onClick={() => visitorsCount(salon)} 
                   className="bg-[var(--Logo-color)] px-4 py-1 text-slate-50 rounded-md z-10 hover:scale-125 transition-all duration-500 hover:bg-[var(--button-color)]"
                   to={`/salonDetails/${salon._id}`}
                 >

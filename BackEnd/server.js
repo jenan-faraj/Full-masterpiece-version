@@ -8,6 +8,8 @@ const userRoute = require("./routes/UserRoute");
 const salonRoutes = require("./routes/SalonRoute");
 const bookRoutes = require("./routes/bookRoutes");
 const reviewRoutes = require("./routes/ReviewRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const path = require("path");
 
 //---------------------------
 // Middleware
@@ -20,7 +22,7 @@ app.use(cookieParser());
 const corsOptions = { origin: "http://localhost:5173", credentials: true };
 app.use(cors(corsOptions));
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
+app.use(express.json({ limit: '10mb' }));
 //---------------------------
 // Connect DB
 //---------------------------
@@ -37,6 +39,7 @@ mongoose
 //---------------------------
 // ROUTES
 //---------------------------
+
 app.use("/api/users", userRoute);
 app.use("/api/salons", salonRoutes);
 app.use("/api/reviews", reviewRoutes);
@@ -48,6 +51,11 @@ app.get("/get_token", (req, res) => {
   }
   res.send({ token });
 });
+// 📦 تحميل الراوت تبع الرفع
+app.use(uploadRoutes);
+
+// 🖼️ نخلي الصور تكون ظاهرة من مجلد uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //---------------------------
 // ERROR HANDLERS
