@@ -32,10 +32,11 @@ const salonSchema = new mongoose.Schema(
         shortDescription: { type: String, default: "" },
         longDescription: { type: String, default: "" },
         price: { type: Number, default: 0 },
+        isDeleted: { type: Boolean, default: false },
       },
     ],
     visitors: { type: Number, default: 0 },
-    Review: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
+    Review: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
     book: [{ type: mongoose.Schema.Types.ObjectId, ref: "book" }],
     openingHours: {
       open: { type: String, default: "" },

@@ -56,6 +56,43 @@ app.use(uploadRoutes);
 
 // 🖼️ نخلي الصور تكون ظاهرة من مجلد uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+const multer = require("multer");
+
+// تحديد مكان تخزين الصور
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // المكان الذي ستخزن فيه الصور
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // حفظ الصورة باسم فريد
+  },
+});
+
+// إنشاء middleware لتحميل الصور
+const upload = multer({ storage: storage });
+
+// إرفاق upload في الـ API Route الخاص بك
+app.put("/api/salons/:id", upload.single("bgImage"), async (req, res) => {
+  try {
+    const salonId = req.params.id;
+    const { bgImage } = req.body;
+
+    // التحقق من أن الصورة تم تحميلها بنجاح
+    if (req.file) {
+      const updatedSalon = await Salon.findByIdAndUpdate(
+        salonId,
+        { bgImage: req.file.path }, // حفظ مسار الصورة في قاعدة البيانات
+        { new: true }
+      );
+      res.status(200).json(updatedSalon);
+    } else {
+      res.status(400).send("No file uploaded.");
+    }
+  } catch (error) {
+    console.error("Error updating salon info:", error);
+    res.status(500).send("Server Error");
+  }
+});
 
 //---------------------------
 // ERROR HANDLERS

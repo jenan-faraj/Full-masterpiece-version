@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ServicePopup from "../components/ServicesPopup";
+import { Trash2 } from "lucide-react";
 
-const AddServiceButton = ({ user, salon }) => {
+const ServicesTab = ({ user, salon }) => {
   const [showModal, setShowModal] = useState(false);
   const [service, setService] = useState({
     title: "",
@@ -17,6 +18,7 @@ const AddServiceButton = ({ user, salon }) => {
   const [uploading, setUploading] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [services, setServices] = useState(salon.services || []); // إضافة حالة لتخزين الخدمات
 
   const handleChange = (e) => {
     setService({ ...service, [e.target.name]: e.target.value });
@@ -54,11 +56,8 @@ const AddServiceButton = ({ user, salon }) => {
     setUploading(true);
     const uploadedUrls = [];
 
-    // In a real application, you would use FormData to upload each image
-    // This is a simplified example - you'll need to implement your actual upload logic
     for (const file of files) {
       try {
-        // Replace with your actual image upload endpoint
         const formData = new FormData();
         formData.append("image", file);
 
@@ -88,7 +87,7 @@ const AddServiceButton = ({ user, salon }) => {
     try {
       const imageUrls = await uploadImages(service.images);
       const newService = { ...service, images: imageUrls };
-      const updatedServices = [...(salon.services || []), newService];
+      const updatedServices = [...services, newService]; // Update the services state
       const response = await axios.put(
         `http://localhost:3000/api/salons/${salon._id}`,
         { services: updatedServices }
@@ -105,7 +104,7 @@ const AddServiceButton = ({ user, salon }) => {
         price: "",
       });
       setPreviewImages([]);
-      salon.services = updatedServices; // Directly update salon services
+      setServices(updatedServices); // Update the state with the new services list
     } catch (error) {
       console.error("Error adding service:", error);
     } finally {
@@ -116,6 +115,24 @@ const AddServiceButton = ({ user, salon }) => {
   const handleServiceClick = (service) => {
     setSelectedService(service);
     setIsPopupOpen(true);
+  };
+
+  const handleDeleteService = async (serviceId) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/salons/${salon._id}/services/${serviceId}/delete`,
+        {
+          method: "PATCH",
+        }
+      );
+
+      if (response.ok) {
+        // Update the services state by filtering out the deleted service
+        setServices(services.filter((service) => service._id !== serviceId));
+      }
+    } catch (error) {
+      console.error("Error deleting service:", error);
+    }
   };
 
   const closePopup = () => {
@@ -139,8 +156,6 @@ const AddServiceButton = ({ user, salon }) => {
                 onChange={handleChange}
                 required
               />
-
-              {/* Image Upload Section */}
               <div className="border rounded p-3">
                 <label className="block text-sm font-medium mb-2">
                   Service Images
@@ -152,8 +167,6 @@ const AddServiceButton = ({ user, salon }) => {
                   onChange={handleImageChange}
                   className="w-full p-1 mb-2"
                 />
-
-                {/* Image Preview Section */}
                 {previewImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {previewImages.map((src, index) => (
@@ -247,41 +260,52 @@ const AddServiceButton = ({ user, salon }) => {
             + Add Service
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {salon.services &&
-            salon.services.map((service, index) => (
-              <div
-                key={index}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="h-40 overflow-hidden rounded-md mb-4">
-                  <img
-                    onClick={() => handleServiceClick(service)}
-                    src={service.images[0]}
-                    alt={service.name}
-                    className="w-full hover:cursor-pointer h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-lg font-medium">
-                  {service.title || "service name"}
-                </h3>
-                <p className="text-gray-600 mt-1">
-                  {service.shortDescription || "service description"}
-                </p>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="font-bold text-[var(--Logo-color)]">
-                    ${service.price || 100}
-                  </span>
-                </div>
-              </div>
-            ))}
 
-          {(!salon.services || salon.services.length === 0) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services &&
+            services
+              .filter((service) => !service.isDeleted)
+              .map((service, index) => (
+                <div
+                  key={index}
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow relative"
+                >
+                  <button
+                    onClick={() => handleDeleteService(service._id)}
+                    className="absolute top-2 right-2 hover:cursor-pointer p-1 bg-red-600 rounded-2xl text-white hover:bg-red-700"
+                    title="Delete Service"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+
+                  <div className="h-40 overflow-hidden rounded-md mb-4">
+                    <img
+                      onClick={() => handleServiceClick(service)}
+                      src={service.images[0]}
+                      alt={service.name}
+                      className="w-full hover:cursor-pointer h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-lg font-medium">
+                    {service.title || "service name"}
+                  </h3>
+                  <p className="text-gray-600 mt-1">
+                    {service.shortDescription || "service description"}
+                  </p>
+                  <div className="flex justify-between items-center mt-4">
+                    <span className="font-bold text-[var(--Logo-color)]">
+                      ${service.price || 100}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+          {(!services ||
+            services.filter((service) => !service.isDeleted).length === 0) && (
             <p className="text-gray-500 col-span-3 text-center py-10">
               No services available
             </p>
           )}
-          {/* Service Popup Component */}
           <ServicePopup
             isOpen={isPopupOpen}
             onClose={closePopup}
@@ -292,5 +316,4 @@ const AddServiceButton = ({ user, salon }) => {
     </div>
   );
 };
-
-export default AddServiceButton;
+export default ServicesTab;

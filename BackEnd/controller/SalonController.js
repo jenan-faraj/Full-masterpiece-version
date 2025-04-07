@@ -61,3 +61,23 @@ exports.deleteSalon = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.softDeleteService = async (req, res) => {
+  const { salonId, serviceId } = req.params;
+
+  try {
+    const result = await Salon.updateOne(
+      { _id: salonId, "services._id": serviceId },
+      { $set: { "services.$.isDeleted": true } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Service not found or already deleted" });
+    }
+
+    res.status(200).json({ message: "Service soft deleted successfully" });
+  } catch (error) {
+    console.error("Error soft deleting service:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

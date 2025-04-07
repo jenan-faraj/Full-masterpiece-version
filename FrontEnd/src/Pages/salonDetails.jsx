@@ -107,6 +107,27 @@ function SalonDetails() {
   useEffect(() => {
     fetchUserProfile();
   }, []);
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const formData = new FormData();
+      formData.append("bgImage", file);
+
+      fetch("http://localhost:3000/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // هنا يمكنك تحديث الداتابيس أو الحالة باستخدام البيانات
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error uploading image:", error);
+        });
+    }
+  };
 
   if (loading)
     return (
@@ -165,7 +186,10 @@ function SalonDetails() {
         )}
         <div className="absolute -bottom-16 left-10 bg-white rounded-full p-1 border-4 border-white shadow-lg h-32 w-32">
           <img
-            src={salon.profileImage}
+            src={
+              salon.profileImage ||
+              "https://i.pinimg.com/736x/f1/39/dc/f139dc89e5b1ad0818f612c7f33200a5.jpg"
+            }
             alt={salon.name}
             className="w-full h-full object-cover rounded-full"
           />

@@ -8,5 +8,6 @@ router.get("/", salonController.getSalons);
 router.get("/:id", salonController.getSalonById);
 router.put("/:id", salonController.updateSalon);
 router.delete("/:id", salonController.deleteSalon);
+router.patch("/:salonId/services/:serviceId/delete", salonController.softDeleteService);
 
 module.exports = router;
