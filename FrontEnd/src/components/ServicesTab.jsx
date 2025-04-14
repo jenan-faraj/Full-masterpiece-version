@@ -139,8 +139,6 @@ const ServicesTab = ({ user, salon }) => {
     setIsPopupOpen(false);
   };
 
-  if (user.email !== salon.email) return null;
-
   return (
     <div>
       {showModal && (
@@ -253,12 +251,14 @@ const ServicesTab = ({ user, salon }) => {
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="bg-white flex justify-between m-5 items-center">
           <h2 className="text-xl font-semibold mb-6">Our Services</h2>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-[var(--Logo-color)] hover:bg-[var(--button-color)] hover:cursor-pointer text-white px-4 py-2 rounded-md"
-          >
-            + Add Service
-          </button>
+          {user.email === salon.email && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-[var(--Logo-color)] hover:bg-[var(--button-color)] hover:cursor-pointer text-white px-4 py-2 rounded-md"
+            >
+              + Add Service
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -270,13 +270,15 @@ const ServicesTab = ({ user, salon }) => {
                   key={index}
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow relative"
                 >
-                  <button
-                    onClick={() => handleDeleteService(service._id)}
-                    className="absolute top-2 right-2 hover:cursor-pointer p-1 bg-red-600 rounded-2xl text-white hover:bg-red-700"
-                    title="Delete Service"
-                  >
-                    <Trash2 size={20} />
-                  </button>
+                  {user.email === salon.email && (
+                    <button
+                      onClick={() => handleDeleteService(service._id)}
+                      className="absolute top-2 right-2 hover:cursor-pointer p-1 bg-red-600 rounded-2xl text-white hover:bg-red-700"
+                      title="Delete Service"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
 
                   <div className="h-40 overflow-hidden rounded-md mb-4">
                     <img

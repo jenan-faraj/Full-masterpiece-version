@@ -27,6 +27,7 @@ function SalonDetails() {
   const [updatedValue, setUpdatedValue] = useState("");
   const [user, setUser] = useState("");
   const [userId, setUserId] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleSave = async () => {
     try {
@@ -104,29 +105,59 @@ function SalonDetails() {
       return null;
     }
   };
+  
   useEffect(() => {
     fetchUserProfile();
   }, []);
-  const handleImageUpload = (event) => {
+  
+  const handleImageUpload = async (event, fieldName) => {
     const file = event.target.files[0];
-
+    
     if (file) {
-      const formData = new FormData();
-      formData.append("bgImage", file);
-
-      fetch("http://localhost:3000/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // هنا يمكنك تحديث الداتابيس أو الحالة باستخدام البيانات
-          console.log(data);
-        })
-        .catch((error) => {
-          console.error("Error uploading image:", error);
-        });
+      setUploading(true);
+      
+      try {
+        const formData = new FormData();
+        formData.append("image", file);
+        
+        const response = await axios.post(
+          "http://localhost:3000/api/upload",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        
+        if (response.data && response.data.url) {
+          // Update salon in database
+          await axios.put(`http://localhost:3000/api/salons/${salon._id}`, {
+            [fieldName]: response.data.url,
+          });
+          
+          // Update local state
+          setSalon((prev) => ({
+            ...prev,
+            [fieldName]: response.data.url,
+          }));
+          
+          console.log(`${fieldName} updated successfully!`);
+        }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      } finally {
+        setUploading(false);
+      }
     }
+  };
+
+  const handleCameraClick = (fieldName) => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = (e) => handleImageUpload(e, fieldName);
+    fileInput.click();
   };
 
   if (loading)
@@ -159,11 +190,7 @@ function SalonDetails() {
                 <Camera
                   size={20}
                   className="text-[var(--Logo-color)]"
-                  onClick={() => {
-                    setEditingField("bgImage");
-                    // Here you would typically open a file selector dialog
-                    // This is a placeholder for the actual implementation
-                  }}
+                  onClick={() => handleCameraClick("bgImage")}
                 />
               </div>
             )}
@@ -175,10 +202,7 @@ function SalonDetails() {
                 <Camera
                   size={20}
                   className="text-[var(--Logo-color)]"
-                  onClick={() => {
-                    setEditingField("bgImage");
-                    // Here you would typically open a file selector dialog
-                  }}
+                  onClick={() => handleCameraClick("bgImage")}
                 />
               </div>
             )}
@@ -198,10 +222,7 @@ function SalonDetails() {
               <Camera
                 size={18}
                 className="text-[var(--Logo-color)]"
-                onClick={() => {
-                  setEditingField("profileImage");
-                  // Here you would typically open a file selector dialog
-                }}
+                onClick={() => handleCameraClick("profileImage")}
               />
             </div>
           )}
